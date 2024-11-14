@@ -3,6 +3,15 @@
 #include <iostream>
 using namespace std;
 
+#define InputFilePath "in.txt"
+
+char variables[] = {
+	'x', 'y', 'z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+	'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w'
+};
+
+
+
 class Node
 {
 private:
@@ -12,14 +21,15 @@ private:
 	Node* link = NULL;
 	Node* dlink = NULL;
 public:
-	Node(char var, Node* link);
-	Node(Node* dlink, int exp, Node* link);
-	Node(float coef, int exp, Node* link);
+	Node(char var, Node* link); // type 1
+	Node(Node* dlink, int exp, Node* link); // type 2
+	Node(float coef, int exp, Node* link); // type 3
 	int print(bool printAll, int line, int depth, int skipLine);
+	int getDepth();
+	static Node* generateFromFile(string fileName);
+	static Node* generateFromMatrix(float inputMatrix[MaxFileLines][MaxFileLines], int i, int j);
 };
 
-// cordinates of screen used by visualized print
-int usedX = 0, usedY = 0;
 int blockWitdh = 33, blockHeight = 9;
 
 template <class T>
@@ -48,7 +58,7 @@ void printLineSeprator(int& line, int depth, bool linked = false) {
 
 	if (linked)
 
-		cout << "------------------V---------\n";
+		cout << "--------------V-------------\n";
 	else
 		cout << "----------------------------\n";
 }
@@ -87,17 +97,56 @@ int Node::print(bool printAll = false, int line = 0, int depth = 0, int skipLine
 	int prevLine = line;
 	if (printAll)
 	{
-
 		int a = dlink->print(printAll, line - blockHeight, depth + 1);
 		if (a > 1) count += a - 1;
 
 		for (int i = prevLine; link != NULL && i < line + (count - 1) * blockHeight;)
-			printCustomLine(i, depth, "                  |         \n");
+			printCustomLine(i, depth, "              |             \n");
 
 		count += link->print(printAll, line + (count - 1) * blockHeight, depth);
 	}
 	cout << "\n";
 	return count;
+}
+
+int Node::getDepth()
+{
+	if (this == NULL) return -1;
+
+	// TODO 
+
+	int depth = 0;
+}
+
+Node* Node::generateFromFile(string fileName = InputFilePath)
+{
+	float matrix[MaxFileLines][MaxFileLines] = { 0 };
+	int i = 0, j = 0;
+
+	string lines[MaxFileLines];
+	int n = readFile(InputFilePath, lines);
+
+	string token;// helping string
+
+	for (i = 0; i < n - 1; i++)
+	{
+		// i + 1 to skip the first line
+		stringstream ss(lines[i + 1]);
+
+		j = 0;
+		while (getline(ss >> ws, token, ' '))
+		{
+			matrix[i][j++] = stof(token);
+		}
+	}
+
+	return generateFromMatrix(matrix, i, j);
+}
+
+Node* Node::generateFromMatrix(float inputMatrix[MaxFileLines][MaxFileLines], int i, int j)
+{
+	return  new Node('a', new Node(new Node(new Node(new Node('h'), 11, new Node('o')), 22, new Node(new Node('p', new Node('j')), 77)), 2, new Node('c')));
+	// TODO
 }
 
 

@@ -10,7 +10,7 @@
 #include <time.h>
 #include <Windows.h>
 #include <conio.h>
-#include "ll.h"
+#include "Node.h"
 
 using namespace std;
 
@@ -219,11 +219,9 @@ int main()
 	//logo::getAnimation();
 	//view::home();
 
-	fetchFile();
-	//test::printMatrix();
-	generateTree();
 	int i;
 	cin >> i;
+	Node* tree = Node::generateFromFile();
 	tree->print(true);
 }
 
