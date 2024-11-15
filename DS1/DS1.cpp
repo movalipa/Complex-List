@@ -223,5 +223,6 @@ int main()
 	cin >> i;
 	Node* tree = Node::generateFromFile();
 	tree->print(true);
+	//consoleColorTest();
 }
 

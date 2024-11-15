@@ -92,6 +92,14 @@ void setConsoleColor(int colorCode) {
 	SetConsoleTextAttribute(cc, colorCode);
 }
 
+void consoleColorTest(int n = 16, string text = "This example text") {
+	for (int i = 0; i < n; i++)
+	{
+		setConsoleColor(i);
+		cout << text << " " << i << "\n";
+	}
+}
+
 bool ensureConsoleSize() {
 	bool check1 = false, check2 = false;
 	if (getConsoleRows() >= 32)
