@@ -6,8 +6,8 @@ using namespace std;
 #define InputFilePath "in.txt"
 
 char variables[] = {
-	'x', 'y', 'z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-	'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w'
+	 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j','k', 'l', 'm',
+	 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w','x', 'y', 'z',
 };
 
 class Node
@@ -23,11 +23,11 @@ public:
 	Node(Node* dlink, int exp, Node* link); // type 2
 	Node(float coef, int exp, Node* link); // type 3
 	int print(bool printAll, int line, int depth, int skipLine);
-	static Node* generateFromFile(string fileName);
-	static Node* generateFromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n);
-	void addExpression(char var, int exp, float coef);
+	static Node* FromFile(string fileName);
+	static Node* FromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n);
 	static bool isEqual(Node* a, Node* b);
 	static Node* sum(Node* a, Node* b);
+	Node* copy();
 };
 
 int blockWitdh = 33, blockHeight = 9;
@@ -129,7 +129,7 @@ int Node::print(bool printAll = false, int line = 0, int depth = 0, int skipLine
 	return count;
 }
 
-Node* Node::generateFromFile(string fileName = InputFilePath)
+Node* Node::FromFile(string fileName = InputFilePath)
 {
 	float matrix[MaxFileLines][MaxFileLines] = { 0 };
 	int i = 0, j = 0;
@@ -151,45 +151,46 @@ Node* Node::generateFromFile(string fileName = InputFilePath)
 		}
 	}
 
-	return generateFromMatrix(matrix, i, j);
+	return FromMatrix(matrix, i, j);
 }
 
-Node* Node::generateFromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n)
+Node* Node::FromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n)
 {
-	return new Node('z', new Node(new Node('y', new Node(new Node('x', new Node(4, 1, new Node(3, 0))), 2, new Node(1, 1))), 2, new Node(new Node('y', new Node(new Node('x', new Node(-2, 1)), 1, new Node(new Node('x', new Node(-3, 1)), 0))), 1)));
+	//return new Node('z', new Node(new Node('y', new Node(new Node('x', new Node(4, 1, new Node(3, 0))), 2, new Node(1, 1))), 2, new Node(new Node('y', new Node(new Node('x', new Node(-2, 1)), 1, new Node(new Node('x', new Node(-3, 1)), 0))), 1)));
 
-	Node* head = new Node('x');
+	Node* head = NULL;
 
 	for (int i = 0; i < m; i++)
 	{
+		Node* node = NULL;
+		Node* p = NULL;
+		float coef = matrix[i][0];
 		for (int j = 1; j < n; j++)
 		{
 			char var = variables[j - 1];
 			int exp = matrix[i][j];
-			float coef = matrix[i][0];
 
-			//if (j == n - 1) // last item
-			//	head->addExpression(var, exp, coef); // coef on last element
-			//else
-			//	head->addExpression(var, exp);
+			if (exp == 0) continue;
+
+			if (node == NULL)
+				p = node = new Node(var, new Node((Node*)NULL, exp));
+			else
+				p = p->dlink = new Node(var, new Node((Node*)NULL, exp));
+
+			p = p->link;
 		}
+		if (p == NULL)
+			error("Polynomial syntax error!", "Only coef provided with zero exp variables", __FILE__, __LINE__);
+
+		p->type = 3;
+		p->coef = coef;
+
+		head = sum(head, node);
+		//head = node;
 	}
 	return head;
 }
 
-void Node::addExpression(char var, int exp, float coef = NULL)
-{
-	Node* p = this;
-	Node* node = new Node(var);
-	while (p)
-	{
-		if (p->type == 1 && p->var == var)
-		{
-
-		}
-		p = p->link;
-	}
-}
 
 bool Node::isEqual(Node* a, Node* b)
 {
@@ -210,13 +211,43 @@ bool Node::isEqual(Node* a, Node* b)
 
 Node* Node::sum(Node* a, Node* b)
 {
-	while (a || b)
+	if (a == NULL)
+		return b;
+	if (b == NULL)
+		return a;
+
+	Node* node = NULL;
+
+	if (isEqual(a, b))
 	{
-		if (Node::isEqual(a, b))
+		node = a->copy(); // or b, they are same
+		node->link = sum(a->link, b->link);
+		node->dlink = sum(a->dlink, b->dlink);
+	}
+	else
+	{
+		if (a->type == 2 && b->type == 2)
 		{
+			Node* low = ((a->exp < b->exp) ? a : b);
+			Node* high = ((a->exp > b->exp) ? a : b);
+
+			node->link = 
 
 		}
 	}
+
+	return node;
+}
+
+Node* Node::copy()
+{
+	Node* node = new Node('x');// var not important
+	node->type = type;
+	node->coef = coef;
+	node->var = var;
+	node->exp = exp;
+
+	return node;
 }
 
 

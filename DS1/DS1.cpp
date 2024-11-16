@@ -221,7 +221,7 @@ int main()
 
 	int i;
 	cin >> i;
-	Node* tree = Node::generateFromFile();
+	Node* tree = Node::FromFile();
 	tree->print(true);
 	//consoleColorTest();
 }
