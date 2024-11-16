@@ -29,6 +29,7 @@ struct ConfirmBoxConfig {
 // 1. live visualization of linked lists
 // 2. optional input from file or from console
 // 3. what is size_t as type
+// 4. visualizer settings using cookies better to be implemented
 
 namespace intro {
 	void keyBinder(string key) {
@@ -221,7 +222,8 @@ int main()
 
 	int i;
 	cin >> i;
-	Node* tree = Node::FromFile();
+	Node* tree = Node::fromFile();
+	//Node* tree = Node::fromString("3x^2");
 	tree->print(true);
 	//consoleColorTest();
 }
