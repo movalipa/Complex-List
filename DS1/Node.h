@@ -6,9 +6,18 @@ using namespace std;
 #define InputFilePath "in.txt"
 
 char variables[] = {
-	'a', 'b', 'c', 'd', 'e', 'f', 'g','h', 'i', 'j', 'k', 'l', 'm',
-	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	 'x', 'y', 'z', 'a', 'b', 'c', 'd', 'e', 'f', 'g','h', 'i', 'j',
+	 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
 };
+int varCount = 26;
+
+int indexOfVariable(char var) {
+	for (int i = 0; i < varCount; i++)
+		if (var == variables[i])
+			return i;
+
+	return -1;
+}
 
 class Node
 {
@@ -29,6 +38,7 @@ public:
 	static bool isEqual(Node* a, Node* b);
 	static Node* sum(Node* a, Node* b);
 	Node* copy();
+	void free(bool recursive);
 };
 
 int blockWitdh = 33, blockHeight = 9;
@@ -100,7 +110,7 @@ Node::Node(Node* dlink, int exp, Node* link = NULL) : type(2), dlink(dlink), exp
 Node::Node(float coef, int exp, Node* link = NULL) : type(3), coef(coef), exp(exp), link(link) {}
 
 
-int Node::print(bool printAll = false, int line = 0, int depth = 0, int skipLine = 0) {
+int Node::print(bool printAll = true, int line = 0, int depth = 0, int skipLine = 0) {
 	if (this == NULL) return 0;
 
 	/*switch (type)
@@ -170,9 +180,63 @@ Node* Node::fromFile(string fileName = InputFilePath)
 	return fromMatrix(matrix, i, j);
 }
 
+Node* Node::fromString(string input) {
+	stringstream ss(input);
+	string token;
+	Node* head = nullptr;
+
+	while (getline(ss, token, '+')) {
+		float coef = 1.0;
+		int exp = 0;
+		char var = '\0';
+
+		// Find the variable in the token
+		int varPos = -1;
+		for (int i = 0; i < varCount; ++i) {
+			if (token.find(variables[i]) != string::npos) {
+				varPos = i;
+				var = variables[i];
+				break;
+			}
+		}
+
+		if (varPos != -1) { // Variable found
+			// Parse coefficient
+			string coefPart = token.substr(0, token.find(var));
+			if (!coefPart.empty()) {
+				coef = stof(coefPart);
+			}
+
+			// Parse exponent
+			int expPos = token.find('^');
+			if (expPos != -1) {
+				exp = stoi(token.substr(expPos + 1));
+			}
+			else {
+				exp = 1; // Assume exponent is 1 if not provided
+			}
+		}
+		else {
+			// No variable; parse as constant
+			coef = stof(token);
+		}
+
+		// Create the term node
+		Node* term = new Node(coef, exp, nullptr);
+		if (var != '\0') {
+			term = new Node(var, term);
+		}
+
+		// Add to polynomial
+		head = sum(head, term);
+	}
+	return head;
+}
+
 
 Node* Node::fromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n)
 {
+	// test
 	//return new Node('z', new Node(new Node('y', new Node(new Node('x', new Node(4, 1, new Node(3, 0))), 2, new Node(1, 1))), 2, new Node(new Node('y', new Node(new Node('x', new Node(-2, 1)), 1, new Node(new Node('x', new Node(-3, 1)), 0))), 1)));
 
 	Node* head = NULL;
@@ -239,7 +303,14 @@ Node* Node::sum(Node* a, Node* b) {
 		result->dlink = sum(a->dlink, b->dlink);
 	}
 	else {
-		if (a->type == 2 && b->type == 2) {
+		if (a->type == 3 && b->type == 3)
+		{
+			// adding coefs togheder
+			result = a->copy();
+			result->coef += b->coef;
+			result->link = sum(a->link, b->link);
+		}
+		else if (a->type == 2 && b->type == 2) {
 			// Sort by exponent
 			if (a->exp < b->exp) {
 				result = a->copy();
@@ -270,6 +341,26 @@ Node* Node::copy() {
 	node->dlink = dlink ? dlink->copy() : nullptr;
 	return node;
 }
+
+void Node::free(bool recursive) {
+	if (!this) return;
+
+	if (recursive) {
+		if (link) {
+			link->free(true);
+			delete link;
+			link = nullptr;
+		}
+		if (dlink) {
+			dlink->free(true);
+			delete dlink;
+			dlink = nullptr;
+		}
+	}
+
+	delete this;
+}
+
 
 
 
