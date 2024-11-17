@@ -9,15 +9,11 @@ char variables[] = {
 	 'x', 'y', 'z', 'a', 'b', 'c', 'd', 'e', 'f', 'g','h', 'i', 'j',
 	 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
 };
-int varCount = 26;
+const int MAX_VARIABLES = 26;
 
-int indexOfVariable(char var) {
-	for (int i = 0; i < varCount; i++)
-		if (var == variables[i])
-			return i;
-
-	return -1;
-}
+const int blockWitdh = 33, blockHeight = 9;
+int backgroundColor = BLACK; // can be changed
+const bool isHighContrast = false;
 
 class Node
 {
@@ -28,40 +24,42 @@ private:
 	Node* link = NULL;
 	Node* dlink = NULL;
 public:
-	Node(char var, Node* link); // type 1
-	Node(Node* dlink, int exp, Node* link); // type 2
-	Node(float coef, int exp, Node* link); // type 3
-	int print(bool printAll, int line, int depth, int skipLine);
-	static Node* fromFile(string fileName);
+	Node(char var, Node* link = NULL); // type 1
+	Node(Node* dlink, int exp, Node* link = NULL); // type 2
+	Node(float coef, int exp, Node* link = NULL); // type 3
+
+	static Node* fromFile(string fileName = InputFilePath);
 	static Node* fromString(string input);
 	static Node* fromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n);
-	static bool isEqual(Node* a, Node* b);
+	static bool isEqual(Node* a, Node* b, bool recursive = false);
 	static Node* sum(Node* a, Node* b);
-	Node* copy();
-	void free(bool recursive);
+
+	int print(bool printAll = false, int line = 0, int depth = 0, int skipLine = 0);
+	Node* copy(bool recursive = false);
+	void free(bool recursive = false);
 };
 
-int blockWitdh = 33, blockHeight = 9;
-int blockBorderColor = WHITE;
+
+// helper functions
 
 template <class T>
 void printLine(string label, T data, int& line, int depth, string ending = "") {
 	gotoxy(depth * blockWitdh, line++);
 
-	setConsoleColor(blockBorderColor);
+	setConsoleColor(WHITE);
 	cout << "|";
 
-	setConsoleColor(WHITE);
+	setConsoleColor(WHITE, backgroundColor);
 	cout << left << setw(10) << label;
 	if constexpr (std::is_same<T, Node*>::value)
 	{
 		if (data == NULL)
 		{
-			setConsoleColor(LIGHTRED);
+			setConsoleColor(LIGHTRED, backgroundColor);
 			cout << left << setw(16) << "Null";
 		}
 		else {
-			setConsoleColor(BROWN);
+			setConsoleColor(BROWN, backgroundColor);
 			cout << left << setw(16) << data;
 		}
 	}
@@ -69,16 +67,16 @@ void printLine(string label, T data, int& line, int depth, string ending = "") {
 	{
 		if (data == NULL)
 		{
-			setConsoleColor(LIGHTRED);
+			setConsoleColor(LIGHTRED, backgroundColor);
 			cout << left << setw(16) << "Null";
 		}
 		else
 		{
-			setConsoleColor(WHITE);
+			setConsoleColor(WHITE, backgroundColor);
 			cout << left << setw(16) << data;
 		}
 	}
-	setConsoleColor(blockBorderColor);
+	setConsoleColor(WHITE);
 	cout << "|";
 
 	setConsoleColor(WHITE);
@@ -88,7 +86,7 @@ void printLine(string label, T data, int& line, int depth, string ending = "") {
 void printLineSeprator(int& line, int depth, bool linked = false) {
 	gotoxy(depth * blockWitdh, line++);
 
-	setConsoleColor(blockBorderColor);
+	setConsoleColor(WHITE);
 	if (linked)
 		cout << "--------------V-------------\n";
 	else
@@ -102,60 +100,17 @@ void printCustomLine(int& line, int depth, string text) {
 	cout << text;
 }
 
+// constructor functions
 
-Node::Node(char var, Node* link = NULL) : type(1), var(var), link(link) {}
+Node::Node(char var, Node* link) : type(1), var(var), link(link) {}
 
-Node::Node(Node* dlink, int exp, Node* link = NULL) : type(2), dlink(dlink), exp(exp), link(link) {}
+Node::Node(Node* dlink, int exp, Node* link) : type(2), dlink(dlink), exp(exp), link(link) {}
 
-Node::Node(float coef, int exp, Node* link = NULL) : type(3), coef(coef), exp(exp), link(link) {}
+Node::Node(float coef, int exp, Node* link) : type(3), coef(coef), exp(exp), link(link) {}
 
+// static functions
 
-int Node::print(bool printAll = true, int line = 0, int depth = 0, int skipLine = 0) {
-	if (this == NULL) return 0;
-
-	/*switch (type)
-	{
-	case 1:
-		blockBorderColor = GREEN;
-		break;
-	case 2:
-		blockBorderColor = LIGHTRED;
-		break;
-	case 3:
-		blockBorderColor = CYAN;
-		break;
-	}*/
-
-	int count = 1;
-
-	bool hasDlink = dlink != NULL;
-
-	printLineSeprator(line, depth);
-	printLine("Address", this, line, depth, ((hasDlink) ? "   --" : ""));
-	printLine("Type", type, line, depth, ((hasDlink) ? "  / " : ""));
-	printLine("Dlink", dlink, line, depth, ((hasDlink) ? "--" : ""));
-	printLine("Var", var, line, depth);
-	printLine("Exp", exp, line, depth);
-	printLine("Coef", coef, line, depth);
-	printLine("Link", link, line, depth);
-	printLineSeprator(line, depth, link != NULL);
-
-	int prevLine = line;
-	if (printAll)
-	{
-		int a = dlink->print(printAll, line - blockHeight, depth + 1);
-		if (a > 1) count += a - 1;
-
-		for (int i = prevLine; link != NULL && i < line + (count - 1) * blockHeight;)
-			printCustomLine(i, depth, "              |             \n");
-
-		count += link->print(printAll, line + (count - 1) * blockHeight, depth);
-	}
-	cout << "\n";
-	return count;
-}
-
-Node* Node::fromFile(string fileName = InputFilePath)
+Node* Node::fromFile(string fileName)
 {
 	float matrix[MaxFileLines][MaxFileLines] = { 0 };
 	int i = 0, j = 0;
@@ -192,7 +147,7 @@ Node* Node::fromString(string input) {
 
 		// Find the variable in the token
 		int varPos = -1;
-		for (int i = 0; i < varCount; ++i) {
+		for (int i = 0; i < MAX_VARIABLES; ++i) {
 			if (token.find(variables[i]) != string::npos) {
 				varPos = i;
 				var = variables[i];
@@ -229,28 +184,25 @@ Node* Node::fromString(string input) {
 
 		// Add to polynomial
 		head = sum(head, term);
+		term->free(true);
 	}
 	return head;
 }
 
-
 Node* Node::fromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n)
 {
-	// test
-	//return new Node('z', new Node(new Node('y', new Node(new Node('x', new Node(4, 1, new Node(3, 0))), 2, new Node(1, 1))), 2, new Node(new Node('y', new Node(new Node('x', new Node(-2, 1)), 1, new Node(new Node('x', new Node(-3, 1)), 0))), 1)));
-
 	Node* head = NULL;
 
 	for (int i = 0; i < m; i++) {
-		Node* node = NULL;
+		Node* term = NULL;
 		Node* p = NULL;
 		float coef = matrix[i][0];
 		for (int j = 1; j < n; j++) {
 			char var = variables[j - 1];
 			int exp = matrix[i][j];
 
-			if (!node) {
-				p = node = new Node(var, new Node(nullptr, exp));
+			if (!term) {
+				p = term = new Node(var, new Node(nullptr, exp));
 			}
 			else {
 				p = p->dlink = new Node(var, new Node(nullptr, exp));
@@ -259,7 +211,9 @@ Node* Node::fromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n)
 			p = p->link;
 		}
 
-		if (!node) {
+
+		// useless for now
+		if (!term) {
 			error("Polynomial syntax error!", "Only coef provided with zero exp variables", __FILE__, __LINE__);
 			continue;
 		}
@@ -268,12 +222,13 @@ Node* Node::fromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n)
 		p->coef = coef;
 
 		// Add the term to the polynomial
-		head = sum(head, node);
+		head = sum(head, term);
+		term->free(true);
 	}
 	return head;
 }
 
-bool Node::isEqual(Node* a, Node* b)
+bool Node::isEqual(Node* a, Node* b, bool recursive)
 {
 	// both null
 	if (a == NULL && b == NULL) return true;
@@ -287,12 +242,14 @@ bool Node::isEqual(Node* a, Node* b)
 		a->type == b->type &&
 		a->var == b->var &&
 		a->exp == b->exp &&
-		a->coef == b->coef;
+		a->coef == b->coef &&
+		(recursive ? isEqual(a->link, b->link) : true) &&
+		(recursive ? isEqual(a->dlink, b->dlink) : true);
 }
 
 Node* Node::sum(Node* a, Node* b) {
-	if (!a) return b;
-	if (!b) return a;
+	if (!a) return b->copy(true);
+	if (!b) return a->copy(true);
 
 	Node* result = nullptr;
 
@@ -303,7 +260,7 @@ Node* Node::sum(Node* a, Node* b) {
 		result->dlink = sum(a->dlink, b->dlink);
 	}
 	else {
-		if (a->type == 3 && b->type == 3)
+		if (a->type == 3 && b->type == 3 && a->exp == b->exp)
 		{
 			// adding coefs togheder
 			result = a->copy();
@@ -315,30 +272,84 @@ Node* Node::sum(Node* a, Node* b) {
 			if (a->exp < b->exp) {
 				result = a->copy();
 				result->link = sum(a->link, b);
+				result->dlink = a->dlink->copy(true);
 			}
 			else {
 				result = b->copy();
 				result->link = sum(a, b->link);
+				result->dlink = b->dlink->copy(true);
 			}
 		}
 		else {
 			// Fallback for other types
 			result = a->copy();
 			result->link = sum(a->link, b);
+			result->dlink = a->dlink->copy();
 		}
 	}
 
 	return result;
 }
 
-Node* Node::copy() {
+// methods
+
+int Node::print(bool printAll, int line, int depth, int skipLine) {
+	if (this == NULL) return 0;
+
+	if (isHighContrast)
+		switch (type)
+		{
+		case 1:
+			backgroundColor = RED;
+			break;
+		case 2:
+			backgroundColor = LIGHTBLUE;
+			break;
+		case 3:
+			backgroundColor = GREEN;
+			break;
+		}
+
+	int count = 1;
+
+	bool hasDlink = dlink != NULL;
+
+	printLineSeprator(line, depth);
+	printLine("Address", this, line, depth, ((hasDlink) ? "   --" : ""));
+	printLine("Type", type, line, depth, ((hasDlink) ? "  / " : ""));
+	printLine("Dlink", dlink, line, depth, ((hasDlink) ? "--" : ""));
+	printLine("Var", var, line, depth);
+	printLine("Exp", exp, line, depth);
+	printLine("Coef", coef, line, depth);
+	printLine("Link", link, line, depth);
+	printLineSeprator(line, depth, link != NULL);
+
+	int prevLine = line;
+	if (printAll)
+	{
+		int a = dlink->print(printAll, line - blockHeight, depth + 1);
+		if (a > 1) count += a - 1;
+
+		for (int i = prevLine; link != NULL && i < line + (count - 1) * blockHeight;)
+			printCustomLine(i, depth, "              |             \n");
+
+		count += link->print(printAll, line + (count - 1) * blockHeight, depth);
+	}
+	cout << "\n";
+	return count;
+}
+
+Node* Node::copy(bool recursive) {
+	if (!this) return NULL;
+
 	Node* node = new Node('x'); // Variable doesn't matter
 	node->type = type;
 	node->coef = coef;
 	node->var = var;
 	node->exp = exp;
-	node->link = link ? link->copy() : nullptr;
-	node->dlink = dlink ? dlink->copy() : nullptr;
+	node->link = recursive ? link->copy(true) : NULL;
+	node->dlink = recursive ? dlink->copy(true) : NULL;
+
 	return node;
 }
 
@@ -348,16 +359,13 @@ void Node::free(bool recursive) {
 	if (recursive) {
 		if (link) {
 			link->free(true);
-			delete link;
-			link = nullptr;
+			link = NULL;
 		}
 		if (dlink) {
 			dlink->free(true);
-			delete dlink;
-			dlink = nullptr;
+			dlink = NULL;
 		}
 	}
-
 	delete this;
 }
 

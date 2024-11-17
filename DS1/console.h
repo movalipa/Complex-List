@@ -86,10 +86,16 @@ void clearConsole() {
 	system("cls");
 }
 
-void setConsoleColor(int colorCode) {
-	HANDLE cc;
-	cc = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleTextAttribute(cc, colorCode);
+void setConsoleColor(int foreground, int background = BLACK) {
+	/*if (foreground < 0 || foreground > 15 || background < 0 || background > 15)
+		error("Invalid color code!", "Foreground and background must be in the range 0-15.", __FILE__, __LINE__);*/
+
+
+	// Combine foreground and background
+	int colorCode = (background << 4) | foreground;
+
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(hConsole, colorCode);
 }
 
 void consoleColorTest(int n = 16, string text = "This example text") {

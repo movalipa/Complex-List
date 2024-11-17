@@ -223,8 +223,9 @@ int main()
 	int i;
 	cin >> i;
 	Node* tree = Node::fromFile();
-	//Node* tree = Node::fromString("4x+6x");
-	tree->print();
+
+	//Node* tree = Node::fromString("10xyz");
+	tree->print(true);
 	//consoleColorTest();
 }
 
