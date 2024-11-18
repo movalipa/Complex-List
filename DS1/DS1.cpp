@@ -30,6 +30,7 @@ struct ConfirmBoxConfig {
 // 2. optional input from file or from console
 // 3. what is size_t as type
 // 4. visualizer settings using cookies better to be implemented
+// 5. head also needs to be freed as well as node in from matrix and from string
 
 namespace intro {
 	void keyBinder(string key) {
@@ -226,6 +227,8 @@ int main()
 
 	//Node* tree = Node::fromString("10xyz");
 	tree->print(true);
+	//cout << tree->toString("");
 	//consoleColorTest();
+
 }
 

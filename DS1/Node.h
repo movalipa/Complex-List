@@ -37,6 +37,7 @@ public:
 	int print(bool printAll = false, int line = 0, int depth = 0, int skipLine = 0);
 	Node* copy(bool recursive = false);
 	void free(bool recursive = false);
+	string toString(string result);
 };
 
 
@@ -213,10 +214,9 @@ Node* Node::fromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n)
 
 
 		// useless for now
-		if (!term) {
+		if (!term)
 			error("Polynomial syntax error!", "Only coef provided with zero exp variables", __FILE__, __LINE__);
-			continue;
-		}
+		
 
 		p->type = 3;
 		p->coef = coef;
@@ -369,6 +369,8 @@ void Node::free(bool recursive) {
 	delete this;
 }
 
-
+string Node::toString(string result = "") {
+	
+}
 
 
