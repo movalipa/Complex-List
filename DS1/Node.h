@@ -123,10 +123,10 @@ Node* Node::fromFile(string fileName)
 
 	string token;// helping string
 
-	for (i = 0; i < n - 1; i++)
+	for (i = 0; i < n; i++)
 	{
 		// i + 1 to skip the first line
-		stringstream ss(lines[i + 1]);
+		stringstream ss(lines[i]);
 
 		j = 0;
 		while (getline(ss >> ws, token, ' '))
