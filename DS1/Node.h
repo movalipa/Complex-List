@@ -14,6 +14,7 @@ const int MAX_VARIABLES = 26;
 const int blockWitdh = 33, blockHeight = 9;
 int backgroundColor = BLACK; // can be changed
 const bool isHighContrast = false;
+const bool preciseCoef = false;
 
 class Node
 {
@@ -37,7 +38,7 @@ public:
 	int print(bool printAll = false, int line = 0, int depth = 0, int skipLine = 0);
 	Node* copy(bool recursive = false);
 	void free(bool recursive = false);
-	string toString(string result);
+	string toString(string result = "");
 };
 
 
@@ -198,32 +199,34 @@ Node* Node::fromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n)
 		Node* term = NULL;
 		Node* p = NULL;
 		float coef = matrix[i][0];
+
+		if (coef == 0)
+			continue;
+
 		for (int j = 1; j < n; j++) {
 			char var = variables[j - 1];
 			int exp = matrix[i][j];
 
-			if (!term) {
+			if (!term)
 				p = term = new Node(var, new Node(nullptr, exp));
-			}
-			else {
+			else
 				p = p->dlink = new Node(var, new Node(nullptr, exp));
-			}
 
 			p = p->link;
 		}
 
-
 		// useless for now
 		if (!term)
 			error("Polynomial syntax error!", "Only coef provided with zero exp variables", __FILE__, __LINE__);
-		
 
 		p->type = 3;
 		p->coef = coef;
 
 		// Add the term to the polynomial
-		head = sum(head, term);
+		Node* temp = sum(head->copy(true), term);
+		head->free(true);
 		term->free(true);
+		head = temp;
 	}
 	return head;
 }
@@ -369,8 +372,35 @@ void Node::free(bool recursive) {
 	delete this;
 }
 
-string Node::toString(string result = "") {
-	
+string Node::toString(string result) {
+	if (this == NULL)
+		return "";
+
+	string newResult = "";
+	string expo = (exp <= 1 ? "" : "^" + to_string(exp));
+	string coefs = (coef == 1 ? "" : to_string(abs(int(coef))));
+	string flag = (coef >= 0 ? " + " : " - ");
+
+	switch (type)
+	{
+	case 1:
+		newResult = result + var;
+		return link->toString(newResult);
+	case 2:
+		if (exp == 0) // removing lastest var from string
+			newResult = result.substr(0, result.size() - 1);
+		else
+			newResult = result + expo;
+
+		return dlink->toString(newResult) + link->toString(result);
+	case 3:
+		if (exp == 0) // removing lastest var from string
+			newResult = flag + coefs + result.substr(0, result.size() - 1);
+		else
+			newResult = flag + coefs + result + expo;
+
+		return newResult + link->toString(result);
+	}
 }
 
 
