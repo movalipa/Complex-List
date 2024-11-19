@@ -227,11 +227,13 @@ int main()
 	int i;
 	cin >> i;
 	Node* tree = Node::fromFile();
+	Node* tree2 = Node::fromFile("in2.txt");
 
 	//Node* tree = Node::fromString("10xyz");
-	tree->print(true);
+	//tree->print(true);
 	//cout << tree->toString();
 	//consoleColorTest();
-	cout << tree->getDepth();
+	//cout << tree->getDepth();
+	cout << (tree->includes(tree2) ? "TRUE" : "FALSE");
 }
 

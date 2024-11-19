@@ -13,8 +13,7 @@ const int MAX_VARIABLES = 26;
 
 const int blockWitdh = 33, blockHeight = 9;
 int backgroundColor = BLACK; // can be changed
-const bool isHighContrast = false;
-const bool preciseCoef = false;
+const bool isHighContrast = true;
 
 class Node
 {
@@ -40,6 +39,7 @@ public:
 	void free(bool recursive = false);
 	string toString(string result = "");
 	int getDepth();
+	bool includes(Node* a);
 };
 
 
@@ -119,7 +119,7 @@ Node* Node::fromFile(string fileName)
 	int i = 0, j = 0;
 
 	string lines[MaxFileLines];
-	int n = readFile(InputFilePath, lines);
+	int n = readFile(fileName, lines);
 
 	string token;// helping string
 
@@ -418,5 +418,36 @@ int Node::getDepth()
 
 	return count;
 }
+
+bool Node::includes(Node* a) {
+	if (a == NULL)
+		return true;
+
+	if (this == NULL)
+		return false;
+
+	switch (type) {
+	case 1:
+		if (isEqual(this, a))
+			return (link ? link->includes(a->link) : a->link == NULL);
+
+		break;
+	case 2:
+		if (isEqual(this, a))
+			return (dlink ? dlink->includes(a->dlink) : a->dlink == NULL) &&
+			(link ? link->includes(a->link) : a->link == NULL);
+
+		break;
+	case 3:
+		if (a->type == 3 && exp == a->exp && coef >= a->coef)
+			return (link ? link->includes(a->link) : a->link == NULL);
+
+		break;
+	}
+
+	// no direct match -> checking link for indirect matches
+	return link->includes(a);
+}
+
 
 
