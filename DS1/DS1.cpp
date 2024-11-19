@@ -33,6 +33,7 @@ struct ConfirmBoxConfig {
 // 5. head also needs to be freed as well as node in from matrix and from string
 // 6. i wanted to write in golang not c++
 // 7. coefs to string precision in settings
+// 8. remove first sign to string prints
 
 namespace intro {
 	void keyBinder(string key) {
@@ -228,8 +229,9 @@ int main()
 	Node* tree = Node::fromFile();
 
 	//Node* tree = Node::fromString("10xyz");
-	//tree->print(true);
-	cout << tree->toString();
+	tree->print(true);
+	//cout << tree->toString();
 	//consoleColorTest();
+	cout << tree->getDepth();
 }
 

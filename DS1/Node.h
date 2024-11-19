@@ -39,6 +39,7 @@ public:
 	Node* copy(bool recursive = false);
 	void free(bool recursive = false);
 	string toString(string result = "");
+	int getDepth();
 };
 
 
@@ -401,6 +402,21 @@ string Node::toString(string result) {
 
 		return newResult + link->toString(result);
 	}
+}
+
+int Node::getDepth()
+{
+	if (this == NULL)
+		return -1;
+
+	int count = 0;
+
+	if (link)
+		count = max(link->getDepth(), count);
+	if (dlink)
+		count = max(dlink->getDepth() + 1, count);
+
+	return count;
 }
 
 
