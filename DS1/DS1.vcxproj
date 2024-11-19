@@ -137,6 +137,7 @@
     <ClInclude Include="logo.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="notification.h" />
+    <ClInclude Include="variables.h" />
     <ClInclude Include="visualizer.h" />
   </ItemGroup>
   <ItemGroup>

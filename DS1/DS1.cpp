@@ -34,6 +34,7 @@ struct ConfirmBoxConfig {
 // 6. i wanted to write in golang not c++
 // 7. coefs to string precision in settings
 // 8. remove first sign to string prints
+// 9. for negetive coefs includes fix bugs
 
 namespace intro {
 	void keyBinder(string key) {
@@ -118,7 +119,7 @@ namespace intro {
 		}*/
 
 		setConsoleColor(CYAN);
-		cout << "Linked List";
+		cout << "Polynomials";
 		setConsoleColor(WHITE);
 		cout << " | " << pageLabel << " -> " << page;
 		showNotif();
@@ -126,10 +127,11 @@ namespace intro {
 	void home() {
 		header();
 		
-		printHelp("KEY 1", "Sign in!");
-		printHelp("KEY 2", "Sign out!", DARKGREY);
-		printHelp("KEY 3", "Profile!", DARKGREY);
-		printHelp("KEY 4", "Explore!", DARKGREY);
+		printHelp("KEY 1", "Profiles!");
+		printHelp("KEY 2", "Visualize!", DARKGREY);
+		printHelp("KEY 3", "Print!", DARKGREY);
+		printHelp("KEY 4", "Get Depth!", DARKGREY);
+		printHelp("KEY 5", "Multiply by!", DARKGREY);
 
 		printHelp("SPACE", "ADMIN PANEL!", LIGHTGREEN);
 		printHelp("ESC", "EXIT!", LIGHTRED);
@@ -231,11 +233,12 @@ int main()
 
 	//Node* tree = Node::fromString("10xyz");
 	//tree->print(true);
-	cout << tree->toString() << "\n\n";
+	/*cout << tree->toString() << "\n\n";
 	tree->multiply(2);
-	cout << tree->toString();
+	cout << tree->toString();*/
 	//consoleColorTest();
 	//cout << tree->getDepth();
 	//cout << (tree->includes(tree2) ? "TRUE" : "FALSE");
+	cout << tree->calculate();
 }
 

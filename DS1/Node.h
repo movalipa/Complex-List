@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include "variables.h"
 using namespace std;
 
 #define InputFilePath "in.txt"
@@ -41,8 +42,10 @@ public:
 	int getDepth();
 	bool includes(Node* a);
 	void multiply(float num);
+	float calculate(int lastVar = 0);
 };
 
+Node* profiles[MaxFileLines];
 
 // helper functions
 
@@ -258,7 +261,7 @@ Node* Node::sum(Node* a, Node* b) {
 
 	Node* result = nullptr;
 
-	if (isEqual(a, b)) {
+	if (isEqual(a, b) && a->type != 3) {
 		// Merge equal nodes
 		result = a->copy();
 		result->link = sum(a->link, b->link);
@@ -427,6 +430,7 @@ bool Node::includes(Node* a) {
 	if (this == NULL)
 		return false;
 
+	bool coefo;
 	switch (type) {
 	case 1:
 		if (isEqual(this, a))
@@ -440,7 +444,16 @@ bool Node::includes(Node* a) {
 
 		break;
 	case 3:
-		if (a->type == 3 && exp == a->exp && coef >= a->coef)
+		//if (coef >= 0) // + +
+		//	coefo = coef >= a->coef;
+		//else
+		//	coefo = abs(coef) >= abs(a->coef);
+
+		// TODO
+
+		//coefo = abs(coef) >= abs(a->coef);
+		//if (a->type == 3 && exp == a->exp && coef >= a->coef)
+		if (isEqual(this, a))
 			return (link ? link->includes(a->link) : a->link == NULL);
 
 		break;
@@ -460,6 +473,25 @@ void Node::multiply(float num)
 
 	dlink->multiply(num);
 	link->multiply(num);
+}
+
+float Node::calculate(int lastVar)
+{
+	if (this == NULL)
+		return 0;
+
+	switch (type)
+	{
+	case 1:
+		return link->calculate(getVar(var));
+	case 2:
+		if (dlink)
+			return pow(lastVar, exp) * dlink->calculate() + link->calculate(lastVar);
+
+		return pow(lastVar, exp) + link->calculate(lastVar);
+	case 3:
+		return coef * pow(lastVar, exp) + link->calculate(lastVar);
+	}
 }
 
 
