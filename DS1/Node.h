@@ -40,6 +40,7 @@ public:
 	string toString(string result = "");
 	int getDepth();
 	bool includes(Node* a);
+	void multiply(float num);
 };
 
 
@@ -447,6 +448,18 @@ bool Node::includes(Node* a) {
 
 	// no direct match -> checking link for indirect matches
 	return link->includes(a);
+}
+
+void Node::multiply(float num)
+{
+	if (this == NULL)
+		return;
+
+	if (type == 3)
+		coef *= num;
+
+	dlink->multiply(num);
+	link->multiply(num);
 }
 
 
