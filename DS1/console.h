@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <conio.h>
+#include <cctype>
 
 // color codes
 #define BLACK        0
@@ -91,7 +92,7 @@ void setConsoleColor(int foreground, int background = BLACK) {
 		error("Invalid color code!", "Foreground and background must be in the range 0-15.", __FILE__, __LINE__);*/
 
 
-	// Combine foreground and background
+		// Combine foreground and background
 	int colorCode = (background << 4) | foreground;
 
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -106,13 +107,9 @@ void consoleColorTest(int n = 16, string text = "This example text") {
 	}
 }
 
-bool ensureConsoleSize() {
-	bool check1 = false, check2 = false;
-	if (getConsoleRows() >= 32)
-		check1 = true;
-	if (getConsoleColumns() >= 130)
-		check2 = true;
-	return check1 && check2;
+bool ensureConsoleSize(int rows = 32, int columns = 130) {
+	return getConsoleRows() >= rows &&
+		getConsoleColumns() >= columns;
 }
 
 void error(string msg = "An error acquired!", string help = "No information provided", string file = "NOT PROVIDDED", int line = -1, bool end = true) {
@@ -380,16 +377,23 @@ string getString(bool preview = true) {
 		}
 		if (GetAsyncKeyState(VK_SPACE))
 		{
-			while (GetAsyncKeyState(VK_SPACE));
-			output += " ";
+			_handleAlphaKeyPress(output, VK_SPACE, ' ', preview, caps);
 		}
 		if (GetAsyncKeyState(VK_BACK))
 		{
-			while (GetAsyncKeyState(VK_BACK));
-			if (output.length() > 0)
-			{
-				output = output.substr(0, output.length() - 1);
-				cout << '\b' << ' ' << '\b';
+			bool firstTrigger = true;
+			while (GetAsyncKeyState(VK_BACK)) {
+				if (output.length() > 0)
+				{
+					output = output.substr(0, output.length() - 1);
+					cout << '\b' << ' ' << '\b';
+				}
+				Sleep(30);
+				if (firstTrigger)
+				{
+					firstTrigger = false;
+					Sleep(200);
+				}
 			}
 		}
 
@@ -665,13 +669,19 @@ string getString(bool preview = true) {
 	}
 }
 
-// not checked with negetive numbers probably not working with that
-bool is_number(const std::string& s)
-{
-	if (s == "")
+bool is_number(const std::string& s) {
+	if (s.empty())
 		return false;
 
 	std::string::const_iterator it = s.begin();
-	while (it != s.end() && std::isdigit(*it)) ++it;
-	return !s.empty() && it == s.end();
+
+	// leading '-'
+	if (*it == '-')
+		++it;
+
+	// Check if the rest are all digits
+	while (it != s.end() && std::isdigit(*it))
+		++it;
+
+	return it == s.end(); // Ensures we reached the end
 }

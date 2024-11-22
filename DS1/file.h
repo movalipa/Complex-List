@@ -106,3 +106,9 @@ string to_upper(string text) {
 		text[i] = toupper(text[i]);
 	return text;
 }
+
+bool fileExists(const string fileName)
+{
+	std::ifstream infile(fileName);
+	return infile.good();
+}

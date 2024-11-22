@@ -10,7 +10,8 @@
 #include <time.h>
 #include <Windows.h>
 #include <conio.h>
-#include "Node.h"
+#include "configs.h"
+#include "profiles.h"
 
 using namespace std;
 
@@ -35,6 +36,7 @@ struct ConfirmBoxConfig {
 // 7. coefs to string precision in settings
 // 8. remove first sign to string prints
 // 9. for negetive coefs includes fix bugs
+// 10. default profile imports
 
 namespace intro {
 	void keyBinder(string key) {
@@ -67,11 +69,130 @@ namespace intro {
 		cout << " to change\n\n";
 		setConsoleColor(WHITE);
 	}
-	
-	void header(string page = "Home", string pageLabel = "Page") {
-		clearConsole();
 
-		/*while (!ensureConsoleSize())
+	void renderProfiles(int& page, int limit = 5) {
+		int n = profiles_count;
+
+		setConsoleColor(LIGHTGREY);
+		cout << left << setw(5) << "ID";
+		cout << left << setw(22) << "Name";
+		cout << left << setw(20) << "Expression";
+		setConsoleColor(WHITE);
+		cout << "\n";
+
+		if (page <= 0)
+			page = 1;
+		page = min(ceil((float)n / limit), page);
+		int start = ((page - 1) * limit >= 0) ? (page - 1) * limit : 0;
+		int end = min(start + limit, n);
+		for (int i = start; i < end; i++)
+		{
+			string strEq = available_profiles[i].data->toString();
+			setConsoleColor(BROWN);
+			cout << left << setw(5) << "#" + to_string(i);
+			setConsoleColor(YELLOW);
+			cout << left << setw(22) << available_profiles[i].name.substr(0, 18);
+			cout << left << setw(20) << (strEq == "" ? "0" : strEq.substr(1));
+
+			setConsoleColor(WHITE);
+			cout << "\n";
+		}
+		int totalPageCount = ceil((float)n / limit);
+		setConsoleColor(WHITE);
+		if (totalPageCount == 0)// no data at all
+			setConsoleColor(LIGHTRED);
+
+		cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << "\n";
+		cout << "                                                                    Page " << page << " of " << totalPageCount << "\n\n";
+		setConsoleColor(WHITE);
+	}
+	void renderVariables(int& page, int limit = 6) {
+		int n = MAX_VARIABLES;
+
+		setConsoleColor(LIGHTGREY);
+		cout << left << setw(5) << "Var";
+		cout << left << setw(5) << "";
+		cout << left << setw(10) << "Value";
+		setConsoleColor(WHITE);
+		cout << "\n";
+
+		if (page <= 0)
+			page = 1;
+		page = min(ceil((float)n / limit), page);
+		int start = ((page - 1) * limit >= 0) ? (page - 1) * limit : 0;
+		int end = min(start + limit, n);
+		for (int i = start; i < end; i++)
+		{
+			setConsoleColor(BROWN);
+			cout << left << setw(1) << " ";
+			cout << left << setw(4) << ::variables[i];
+			setConsoleColor(DARKGREY);
+			cout << left << setw(7) << "-->";
+
+			int varValue = getVar(::variables[i]);
+			if (varValue == 0)
+				setConsoleColor(LIGHTRED);
+			else
+				setConsoleColor(YELLOW);
+			cout << left << setw(10) << varValue;
+
+			setConsoleColor(WHITE);
+			cout << "\n";
+		}
+		int totalPageCount = ceil((float)n / limit);
+		setConsoleColor(WHITE);
+		if (totalPageCount == 0)// no data at all
+			setConsoleColor(LIGHTRED);
+
+		cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << "\n";
+		cout << "                                                                    Page " << page << " of " << totalPageCount << "\n\n";
+		setConsoleColor(WHITE);
+	}
+	void renderSettings(int& page, int limit = 6) {
+		int n = MAX_CONFIGS;
+
+		setConsoleColor(LIGHTGREY);
+		cout << left << setw(5) << "ID";
+		cout << left << setw(30) << "Config";
+		cout << left << setw(10) << "Status";
+		setConsoleColor(WHITE);
+		cout << "\n";
+
+		if (page <= 0)
+			page = 1;
+		page = min(ceil((float)n / limit), page);
+		int start = ((page - 1) * limit >= 0) ? (page - 1) * limit : 0;
+		int end = min(start + limit, n);
+		for (int i = start; i < end; i++)
+		{
+			setConsoleColor(BROWN);
+			cout << left << setw(5) << "#" + to_string(i);
+			setConsoleColor(YELLOW);
+			cout << left << setw(30) << available_configs[i];
+
+			bool value = getConfig(available_configs[i]);
+			if (value)
+				setConsoleColor(GREEN);
+			else
+				setConsoleColor(LIGHTRED);
+			cout << left << setw(10) << (value ? "ON" : "OFF");
+
+			setConsoleColor(WHITE);
+			cout << "\n";
+		}
+		int totalPageCount = ceil((float)n / limit);
+		setConsoleColor(WHITE);
+		if (totalPageCount == 0)// no data at all
+			setConsoleColor(LIGHTRED);
+
+		cout << "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - " << "\n";
+		cout << "                                                                    Page " << page << " of " << totalPageCount << "\n\n";
+		setConsoleColor(WHITE);
+	}
+
+	void sizePrompt(int rows = 32, int columns = 130) {
+		clearConsole();
+		while (!ensureConsoleSize(rows, columns))
 		{
 			string toShow = "Your window size doesn't match our requirements";
 			int xPos = (getConsoleColumns() - toShow.length()) / 2;
@@ -87,7 +208,7 @@ namespace intro {
 			cout << toShow;
 			setConsoleColor(WHITE);
 
-			toShow = "Must be at least 130 X 32";
+			toShow = "Must be at least " + to_string(columns) + " X " + to_string(rows);
 			xPos = (getConsoleColumns() - toShow.length()) / 2;
 			yPos = (getConsoleRows()) / 2;
 			gotoxy(xPos, yPos);
@@ -98,7 +219,7 @@ namespace intro {
 			yPos = (getConsoleRows()) / 2 + 1;
 			gotoxy(xPos, yPos);
 			cout << "Yours is ";
-			if (getConsoleColumns() >= 130)
+			if (getConsoleColumns() >= columns)
 				setConsoleColor(LIGHTGREEN);
 			else
 				setConsoleColor(LIGHTRED);
@@ -107,7 +228,7 @@ namespace intro {
 			setConsoleColor(WHITE);
 			cout << " X ";
 
-			if (getConsoleRows() >= 32)
+			if (getConsoleRows() >= rows)
 				setConsoleColor(LIGHTGREEN);
 			else
 				setConsoleColor(LIGHTRED);
@@ -116,7 +237,12 @@ namespace intro {
 			setConsoleColor(WHITE);
 			Sleep(500);
 			clearConsole();
-		}*/
+		}
+	}
+	void header(string page = "Home", string pageLabel = "Page") {
+		clearConsole();
+
+		//sizePrompt();
 
 		setConsoleColor(CYAN);
 		cout << "Polynomials";
@@ -124,16 +250,105 @@ namespace intro {
 		cout << " | " << pageLabel << " -> " << page;
 		showNotif();
 	}
+	void profiles(int& page) {
+		header("Profiles");
+
+		renderProfiles(page);
+
+		printHelp("ENTER", "Select Profile!");
+		printHelp("KEY 1", "Import Profile!");
+		printHelp("KEY 2", "Export Profile!", DARKGREY);
+		printHelp("DEL", "Remove Profile!");
+
+		printHelp("UP", "Previous Page!", CYAN);
+		printHelp("DOWN", "Next Page!", CYAN);
+
+		printHelp("BACK", "RETURN!", LIGHTCYAN);
+		printHelp("ESC", "EXIT!", LIGHTRED);
+	}
+	void visualizer(string name) {
+		sizePrompt(80, 450); // stops program until size matches
+
+		header(name, "Visualizer");
+
+		Node* prof = getProfile(name);
+
+		prof->print(true, 2);
+
+		cout << "\n\n";
+
+		printHelp("KEY 1", "Repaint!");
+
+		printHelp("BACK", "RETURN!", LIGHTCYAN);
+		printHelp("ESC", "EXIT!", LIGHTRED);
+	}
+	void profile(string name) {
+		header(name, "Profile");
+
+		Node* prof = getProfile(name);
+		setConsoleColor(LIGHTGREY);
+		cout << "String Equivilant:";
+		setConsoleColor(YELLOW);
+		cout << prof->toString() << "\n\n";
+		setConsoleColor(LIGHTGREY);
+		cout << "Nodes max depth: ";
+		setConsoleColor(YELLOW);
+		cout << prof->getDepth() << "\n\n";
+		setConsoleColor(LIGHTGREY);
+		cout << "Calculated result: ";
+		setConsoleColor(YELLOW);
+		cout << prof->calculate() << "  ";
+
+		if (!isRangeDefined(prof->getDepth() + 1))
+		{
+			setConsoleColor(BLACK, BROWN);
+			cout << "WARNING: Some variables are not defined or set to zero!";
+		}
+
+		setConsoleColor(WHITE);
+		cout << "\n\n";
+
+		cout << "\n";
+
+		printHelp("KEY 1", "Visualizer!");
+
+		printHelp("BACK", "RETURN!", LIGHTCYAN);
+		printHelp("ESC", "EXIT!", LIGHTRED);
+	}
+	void variables(int& page) {
+		header("Variables");
+
+		renderVariables(page);
+
+		printHelp("ENTER", "Update variable!");
+		printHelp("DEL", "Delete variable!");
+
+		printHelp("UP", "Previous Page!", CYAN);
+		printHelp("DOWN", "Next Page!", CYAN);
+
+		printHelp("BACK", "RETURN!", LIGHTCYAN);
+		printHelp("ESC", "EXIT!", LIGHTRED);
+	}
+	void settings(int& page) {
+		header("Settings");
+
+		renderSettings(page);
+
+		printHelp("KEY 1", "Toggle config!");
+
+		printHelp("UP", "Previous Page!", CYAN);
+		printHelp("DOWN", "Next Page!", CYAN);
+
+		printHelp("BACK", "RETURN!", LIGHTCYAN);
+		printHelp("ESC", "EXIT!", LIGHTRED);
+	}
 	void home() {
 		header();
-		
-		printHelp("KEY 1", "Profiles!");
-		printHelp("KEY 2", "Visualize!", DARKGREY);
-		printHelp("KEY 3", "Print!", DARKGREY);
-		printHelp("KEY 4", "Get Depth!", DARKGREY);
-		printHelp("KEY 5", "Multiply by!", DARKGREY);
 
-		printHelp("SPACE", "ADMIN PANEL!", LIGHTGREEN);
+		printHelp("KEY 1", "Profiles!");
+		printHelp("KEY 2", "Variables!");
+		printHelp("KEY 3", "Settings!");
+
 		printHelp("ESC", "EXIT!", LIGHTRED);
 	}
 }
@@ -185,6 +400,220 @@ namespace view {
 			}
 		}
 	}
+
+	void visualizer(string name) {
+		while (true)
+		{
+			intro::visualizer(name);
+			int cc = getKey();
+			string name, file;
+			switch (cc)
+			{
+			case VK_ESCAPE:
+				if (confirmBox())
+					exit(0);
+				else
+					setNotif("warning", "Action canceled!");
+				break;
+			case VK_BACK:
+				return;
+				break;
+			case VK_KEY1:
+				break;
+			default:
+				setNotif("error", "Unknown Command!!!");
+				break;
+			}
+		}
+	}
+	void profile(string name) {
+		while (true)
+		{
+			intro::profile(name);
+			int cc = getKey();
+			switch (cc)
+			{
+			case VK_ESCAPE:
+				if (confirmBox())
+					exit(0);
+				else
+					setNotif("warning", "Action canceled!");
+				break;
+			case VK_BACK:
+				return;
+				break;
+			case VK_KEY1:
+				visualizer(name);
+				break;
+			default:
+				setNotif("error", "Unknown Command!!!");
+				break;
+			}
+		}
+	}
+
+	void profiles() {
+		int page = 1;
+		while (true)
+		{
+			intro::profiles(page);
+			int cc = getKey();
+			string name, file;
+			switch (cc)
+			{
+			case VK_ESCAPE:
+				if (confirmBox())
+					exit(0);
+				else
+					setNotif("warning", "Action canceled!");
+				break;
+			case VK_BACK:
+				return;
+				break;
+			case VK_RETURN:
+				cout << "Enter profile name to select: ";
+				name = getString();
+				if (!existsProfile(name))
+				{
+					setNotif("error", "This name doesnt exist as a profile!");
+					break;
+				}
+				profile(name);
+				break;
+			case VK_KEY1:
+				cout << "Enter new profiles name: ";
+				name = getString();
+				if (name.size() == 0 || existsProfile(name))
+				{
+					setNotif("error", "This name is already taken or it's invalid!");
+					break;
+				}
+				cout << "Enter matrix file name: ";
+				file = getString();
+				if (!fileExists(file))
+				{
+					setNotif("error", "Invalid file name!");
+					break;
+				}
+				addProfile(name, Node::fromFile(file));
+				setNotif("success", "Profile imported successfully!");
+				break;
+			case VK_KEY2:
+				setNotif("warning", "To be implemented!");
+				break;
+			case VK_DELETE:
+				setNotif("warning", "To be implemented!");
+				break;
+			case VK_UP:
+				page--;
+				break;
+			case VK_DOWN:
+				page++;
+				break;
+			default:
+				setNotif("error", "Unknown Command!!!");
+				break;
+			}
+		}
+	}
+
+
+	void variables() {
+		int page = 1;
+		while (true)
+		{
+			intro::variables(page);
+			int cc = getKey();
+			char varName;
+			string varValue;
+			switch (cc)
+			{
+			case VK_ESCAPE:
+				if (confirmBox())
+					exit(0);
+				else
+					setNotif("warning", "Action canceled!");
+				break;
+			case VK_BACK:
+				return;
+				break;
+			case VK_RETURN:
+				cout << "Enter variable name to update: ";
+				varName = getString()[0];
+				cout << "Enter new value: ";
+				varValue = getString();
+				if (!is_number(varValue))
+				{
+					setNotif("error", "Value you provided is not a valid number!");
+					break;
+				}
+
+				if (setVar(varName, stoi(varValue)))
+					setNotif("success", "Variable updated successfully!");
+				else
+					setNotif("error", "Couldnt find variable!");
+
+				break;
+			case VK_DELETE:
+				cout << "Enter variable name to delete: ";
+				varName = getString()[0];
+				if (unsetVar(varName))
+					setNotif("success", "Variable deleted successfully!");
+				else
+					setNotif("error", "Couldnt find variable!");
+				break;
+			case VK_UP:
+				page--;
+				break;
+			case VK_DOWN:
+				page++;
+				break;
+			default:
+				setNotif("error", "Unknown Command!!!");
+				break;
+			}
+		}
+	}
+	void settings() {
+		int page = 1;
+		while (true)
+		{
+			intro::settings(page);
+			int cc = getKey();
+			string configID;
+			switch (cc)
+			{
+			case VK_ESCAPE:
+				if (confirmBox())
+					exit(0);
+				else
+					setNotif("warning", "Action canceled!");
+				break;
+			case VK_BACK:
+				return;
+				break;
+			case VK_RETURN:
+				cout << "Enter config ID to toggle: ";
+				configID = getString();
+
+				if (is_number(configID) && toggleConfig(available_configs[stoi(configID)]))
+					setNotif("success", "Config updated successfully!");
+				else
+					setNotif("error", "Couldnt find config ID provided by you!");
+
+				break;
+			case VK_UP:
+				page--;
+				break;
+			case VK_DOWN:
+				page++;
+				break;
+			default:
+				setNotif("error", "Unknown Command!!!");
+				break;
+			}
+		}
+	}
 	void home() {
 		while (true)
 		{
@@ -202,16 +631,13 @@ namespace view {
 				setNotif("warning", "Return back is unavailable!");
 				break;
 			case VK_KEY1:
-				//signin();
+				profiles();
 				break;
 			case VK_KEY2:
-				//signout();
+				variables();
 				break;
 			case VK_KEY3:
-				//profile();
-				break;
-			case VK_KEY4:
-				//explore();
+				settings();
 				break;
 			default:
 				setNotif("error", "Unknown Command!!!");
@@ -223,8 +649,10 @@ namespace view {
 
 int main()
 {
+	addProfile("main", Node::fromFile("in.txt"));
+	addProfile("helper", Node::fromFile("in2.txt"));
 	//logo::getAnimation();
-	//view::home();
+	view::home();
 
 	int i;
 	cin >> i;
@@ -232,13 +660,13 @@ int main()
 	//Node* tree2 = Node::fromFile("in2.txt");
 
 	//Node* tree = Node::fromString("10xyz");
-	//tree->print(true);
+	tree->print(true);
 	/*cout << tree->toString() << "\n\n";
 	tree->multiply(2);
 	cout << tree->toString();*/
 	//consoleColorTest();
 	//cout << tree->getDepth();
 	//cout << (tree->includes(tree2) ? "TRUE" : "FALSE");
-	cout << tree->calculate();
+	//cout << tree->calculate();
 }
 

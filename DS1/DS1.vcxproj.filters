@@ -47,6 +47,12 @@
     <ClInclude Include="variables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="configs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="profiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="cookies.csv">

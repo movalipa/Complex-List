@@ -1,20 +1,13 @@
 #pragma once
-
-#include <iostream>
 #include "variables.h"
-using namespace std;
+#include "configs.h"
 
 #define InputFilePath "in.txt"
-
-char variables[] = {
-	 'x', 'y', 'z', 'a', 'b', 'c', 'd', 'e', 'f', 'g','h', 'i', 'j',
-	 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-};
-const int MAX_VARIABLES = 26;
+#define HighContrastConfigName "high_contrast_print"
+#define AnimationConfigName "animation_print"
 
 const int blockWitdh = 33, blockHeight = 9;
 int backgroundColor = BLACK; // can be changed
-const bool isHighContrast = true;
 
 class Node
 {
@@ -45,13 +38,14 @@ public:
 	float calculate(int lastVar = 0);
 };
 
-Node* profiles[MaxFileLines];
-
 // helper functions
 
 template <class T>
 void printLine(string label, T data, int& line, int depth, string ending = "") {
 	gotoxy(depth * blockWitdh, line++);
+
+	if (getConfig(AnimationConfigName))
+		Sleep(60);
 
 	setConsoleColor(WHITE);
 	cout << "|";
@@ -93,6 +87,9 @@ void printLine(string label, T data, int& line, int depth, string ending = "") {
 void printLineSeprator(int& line, int depth, bool linked = false) {
 	gotoxy(depth * blockWitdh, line++);
 
+	if (getConfig(AnimationConfigName))
+		Sleep(40);
+
 	setConsoleColor(WHITE);
 	if (linked)
 		cout << "--------------V-------------\n";
@@ -103,6 +100,10 @@ void printLineSeprator(int& line, int depth, bool linked = false) {
 
 void printCustomLine(int& line, int depth, string text) {
 	gotoxy(depth * blockWitdh, line++);
+
+	if (getConfig(AnimationConfigName))
+		Sleep(20);
+
 	setConsoleColor(WHITE);
 	cout << text;
 }
@@ -143,57 +144,7 @@ Node* Node::fromFile(string fileName)
 }
 
 Node* Node::fromString(string input) {
-	stringstream ss(input);
-	string token;
-	Node* head = nullptr;
-
-	while (getline(ss, token, '+')) {
-		float coef = 1.0;
-		int exp = 0;
-		char var = '\0';
-
-		// Find the variable in the token
-		int varPos = -1;
-		for (int i = 0; i < MAX_VARIABLES; ++i) {
-			if (token.find(variables[i]) != string::npos) {
-				varPos = i;
-				var = variables[i];
-				break;
-			}
-		}
-
-		if (varPos != -1) { // Variable found
-			// Parse coefficient
-			string coefPart = token.substr(0, token.find(var));
-			if (!coefPart.empty()) {
-				coef = stof(coefPart);
-			}
-
-			// Parse exponent
-			int expPos = token.find('^');
-			if (expPos != -1) {
-				exp = stoi(token.substr(expPos + 1));
-			}
-			else {
-				exp = 1; // Assume exponent is 1 if not provided
-			}
-		}
-		else {
-			// No variable; parse as constant
-			coef = stof(token);
-		}
-
-		// Create the term node
-		Node* term = new Node(coef, exp, nullptr);
-		if (var != '\0') {
-			term = new Node(var, term);
-		}
-
-		// Add to polynomial
-		head = sum(head, term);
-		term->free(true);
-	}
-	return head;
+	return NULL; // doesnt work
 }
 
 Node* Node::fromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n)
@@ -304,7 +255,7 @@ Node* Node::sum(Node* a, Node* b) {
 int Node::print(bool printAll, int line, int depth, int skipLine) {
 	if (this == NULL) return 0;
 
-	if (isHighContrast)
+	if (getConfig(HighContrastConfigName))
 		switch (type)
 		{
 		case 1:
@@ -343,7 +294,7 @@ int Node::print(bool printAll, int line, int depth, int skipLine) {
 
 		count += link->print(printAll, line + (count - 1) * blockHeight, depth);
 	}
-	cout << "\n";
+	//cout << "\n";
 	return count;
 }
 
