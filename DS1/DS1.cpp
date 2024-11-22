@@ -4,7 +4,6 @@
 #include "console.h"
 #include "cookie.h"
 #include "notification.h"
-#include "logo.h"
 #include <iomanip>
 #include <stdlib.h>
 #include <time.h>
@@ -255,10 +254,15 @@ namespace intro {
 
 		renderProfiles(page);
 
-		printHelp("ENTER", "Select Profile!");
-		printHelp("KEY 1", "Import Profile!");
-		printHelp("KEY 2", "Export Profile!", DARKGREY);
-		printHelp("DEL", "Remove Profile!");
+		printHelp("ENTER", "Select Profile!", BROWN);
+		printHelp("SPACE", "Import Profile!", BROWN);
+		//printHelp("NONE", "Export Profile!", DARKGREY);
+		printHelp("DEL", "Remove Profile!", BROWN);
+
+		printHelp("KEY 1", "Comparison!");
+		printHelp("KEY 2", "Subset!");
+		printHelp("KEY 3", "Addition!");
+		printHelp("KEY 4", "Exclude!", DARKGREY);
 
 		printHelp("UP", "Previous Page!", CYAN);
 		printHelp("DOWN", "Next Page!", CYAN);
@@ -266,14 +270,12 @@ namespace intro {
 		printHelp("BACK", "RETURN!", LIGHTCYAN);
 		printHelp("ESC", "EXIT!", LIGHTRED);
 	}
-	void visualizer(string name) {
+	void visualizer(string name, Node* data) {
 		sizePrompt(80, 450); // stops program until size matches
 
 		header(name, "Visualizer");
 
-		Node* prof = getProfile(name);
-
-		prof->print(true, 2);
+		data->print(true, 2);
 
 		cout << "\n\n";
 
@@ -282,24 +284,25 @@ namespace intro {
 		printHelp("BACK", "RETURN!", LIGHTCYAN);
 		printHelp("ESC", "EXIT!", LIGHTRED);
 	}
-	void profile(string name) {
+	void profile(string name, Node* data) {
 		header(name, "Profile");
 
-		Node* prof = getProfile(name);
 		setConsoleColor(LIGHTGREY);
 		cout << "String Equivilant:";
 		setConsoleColor(YELLOW);
-		cout << prof->toString() << "\n\n";
+		cout << data->toString() << "\n\n";
+
 		setConsoleColor(LIGHTGREY);
 		cout << "Nodes max depth: ";
 		setConsoleColor(YELLOW);
-		cout << prof->getDepth() << "\n\n";
+		cout << data->getDepth() << "\n\n";
+
 		setConsoleColor(LIGHTGREY);
 		cout << "Calculated result: ";
 		setConsoleColor(YELLOW);
-		cout << prof->calculate() << "  ";
+		cout << data->calculate() << "  ";
 
-		if (!isRangeDefined(prof->getDepth() + 1))
+		if (!isRangeDefined(data->getDepth() + 1))
 		{
 			setConsoleColor(BLACK, BROWN);
 			cout << "WARNING: Some variables are not defined or set to zero!";
@@ -311,6 +314,10 @@ namespace intro {
 		cout << "\n";
 
 		printHelp("KEY 1", "Visualizer!");
+		printHelp("KEY 2", "Multiply!");
+		printHelp("KEY 3", "Devide!");
+		printHelp("KEY 4", "Inverse!");
+		printHelp("KEY 5", "Save as profile!");
 
 		printHelp("BACK", "RETURN!", LIGHTCYAN);
 		printHelp("ESC", "EXIT!", LIGHTRED);
@@ -401,10 +408,10 @@ namespace view {
 		}
 	}
 
-	void visualizer(string name) {
+	void visualizer(string name, Node* data) {
 		while (true)
 		{
-			intro::visualizer(name);
+			intro::visualizer(name, data);
 			int cc = getKey();
 			string name, file;
 			switch (cc)
@@ -426,11 +433,12 @@ namespace view {
 			}
 		}
 	}
-	void profile(string name) {
+	void profile(string name, Node* data) {
 		while (true)
 		{
-			intro::profile(name);
+			intro::profile(name, data);
 			int cc = getKey();
+			string tmp;
 			switch (cc)
 			{
 			case VK_ESCAPE:
@@ -443,7 +451,45 @@ namespace view {
 				return;
 				break;
 			case VK_KEY1:
-				visualizer(name);
+				visualizer(name, data);
+				break;
+			case VK_KEY2:
+				cout << "Enter a number to multiply by: ";
+				tmp = getString();
+				if (!is_number(tmp))
+				{
+					setNotif("error", "Provide a valid number!");
+					break;
+				}
+				data->multiply(stoi(tmp));
+				setNotif("success", "Profile multiplied successfully!");
+				break;
+			case VK_KEY3:
+				cout << "Enter a number to devide by: ";
+				tmp = getString();
+				if (!is_number(tmp) || tmp == "0")
+				{
+					setNotif("error", "Provide a valid number!");
+					break;
+				}
+				data->multiply(1.0/stoi(tmp));
+				setNotif("success", "Profile devided successfully!");
+				break;
+			case VK_KEY4:
+				data->multiply(-1);
+				setNotif("success", "Profile inversed successfully!");
+				break;
+			case VK_KEY5:
+				cout << "Enter profile name to save: ";
+				tmp = getString();
+				if (existsProfile(tmp))
+				{
+					setNotif("error", "This profile name is alread taken!");
+					break;
+				}
+				addProfile(tmp, data->copy(true));
+				setNotif("success", "New profile added successfully!");
+				return;
 				break;
 			default:
 				setNotif("error", "Unknown Command!!!");
@@ -458,7 +504,8 @@ namespace view {
 		{
 			intro::profiles(page);
 			int cc = getKey();
-			string name, file;
+			string name, name2, file;
+			Node* result;
 			switch (cc)
 			{
 			case VK_ESCAPE:
@@ -478,10 +525,10 @@ namespace view {
 					setNotif("error", "This name doesnt exist as a profile!");
 					break;
 				}
-				profile(name);
+				profile(name, getProfile(name));
 				break;
-			case VK_KEY1:
-				cout << "Enter new profiles name: ";
+			case VK_SPACE:
+				cout << "Enter new profile name: ";
 				name = getString();
 				if (name.size() == 0 || existsProfile(name))
 				{
@@ -498,11 +545,95 @@ namespace view {
 				addProfile(name, Node::fromFile(file));
 				setNotif("success", "Profile imported successfully!");
 				break;
+			case VK_KEY1:
+				cout << "Enter first profile name: ";
+				name = getString();
+				if (!existsProfile(name))
+				{
+					setNotif("error", "Profile doesnt exist!");
+					break;
+				}
+				cout << "Enter second profile name: ";
+				name2 = getString();
+				if (!existsProfile(name2))
+				{
+					setNotif("error", "Profile doesnt exist!");
+					break;
+				}
+				if (Node::isEqual(getProfile(name), getProfile(name2), true))
+				{
+					setConsoleColor(BLACK, LIGHTGREEN);
+					cout << "They are equal!";
+				}
+				else
+				{
+					setConsoleColor(WHITE, LIGHTRED);
+					cout << "They are not equal!";
+				}
+				setConsoleColor(WHITE);
+				cout << "\n";
+				cout << "press enter to continue...";
+				getKey();
+				break;
 			case VK_KEY2:
-				setNotif("warning", "To be implemented!");
+				cout << "Enter base profile name: ";
+				name = getString();
+				if (!existsProfile(name))
+				{
+					setNotif("error", "Profile doesnt exist!");
+					break;
+				}
+				cout << "Enter sample profile name: ";
+				name2 = getString();
+				if (!existsProfile(name2))
+				{
+					setNotif("error", "Profile doesnt exist!");
+					break;
+				}
+				if (getProfile(name)->includes(getProfile(name2)))
+				{
+					setConsoleColor(BLACK, LIGHTGREEN);
+					cout << name2 << " is a subset of " << name;
+				}
+				else
+				{
+					setConsoleColor(WHITE, LIGHTRED);
+					cout << name2 << " is not a subset of " << name;
+				}
+				setConsoleColor(WHITE);
+				cout << "\n";
+				cout << "press enter to continue...";
+				getKey();
+				break;
+			case VK_KEY3:
+				cout << "Enter first profile name: ";
+				name = getString();
+				if (!existsProfile(name))
+				{
+					setNotif("error", "Profile doesnt exist!");
+					break;
+				}
+				cout << "Enter second profile name: ";
+				name2 = getString();
+				if (!existsProfile(name2))
+				{
+					setNotif("error", "Profile doesnt exist!");
+					break;
+				}
+				result = Node::sum(getProfile(name), getProfile(name2));
+				profile("Sum(" + name + "+" + name2 + ")", result);
+				result->free(true);
+				break;
+			case VK_KEY4:
+				setNotif("warning", "To be implemented");
 				break;
 			case VK_DELETE:
-				setNotif("warning", "To be implemented!");
+				cout << "Enter profile name to remove: ";
+				name = getString();
+				if (removeProfile(name))
+					setNotif("success", "Profile removed successfully!");
+				else
+					setNotif("error", "This name doesnt exist as a profile!");
 				break;
 			case VK_UP:
 				page--;
@@ -516,7 +647,6 @@ namespace view {
 			}
 		}
 	}
-
 
 	void variables() {
 		int page = 1;
@@ -651,16 +781,20 @@ int main()
 {
 	addProfile("main", Node::fromFile("in.txt"));
 	addProfile("helper", Node::fromFile("in2.txt"));
-	//logo::getAnimation();
-	view::home();
 
+	view::home();
+	
+	// palyground
+	
 	int i;
 	cin >> i;
 	Node* tree = Node::fromFile();
-	//Node* tree2 = Node::fromFile("in2.txt");
+	Node* tree2 = Node::fromFile("in2.txt");
+
+	cout << Node::isEqual(tree, tree2, true);
 
 	//Node* tree = Node::fromString("10xyz");
-	tree->print(true);
+	//tree->print(true);
 	/*cout << tree->toString() << "\n\n";
 	tree->multiply(2);
 	cout << tree->toString();*/

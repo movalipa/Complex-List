@@ -32,12 +32,6 @@
     <ClInclude Include="notification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="logo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ll.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="visualizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

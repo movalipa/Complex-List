@@ -108,6 +108,18 @@ void printCustomLine(int& line, int depth, string text) {
 	cout << text;
 }
 
+string float2string(float num) {
+	ostringstream oss;
+	oss << fixed << setprecision(4);
+	oss << abs(num);
+	string numStr = oss.str();
+	numStr.erase(numStr.find_last_not_of('0') + 1, string::npos);
+	if (numStr.back() == '.')
+		numStr.pop_back();
+
+	return numStr;
+}
+
 // constructor functions
 
 Node::Node(char var, Node* link) : type(1), var(var), link(link) {}
@@ -202,8 +214,8 @@ bool Node::isEqual(Node* a, Node* b, bool recursive)
 		a->var == b->var &&
 		a->exp == b->exp &&
 		a->coef == b->coef &&
-		(recursive ? isEqual(a->link, b->link) : true) &&
-		(recursive ? isEqual(a->dlink, b->dlink) : true);
+		(recursive ? isEqual(a->link, b->link, true) : true) &&
+		(recursive ? isEqual(a->dlink, b->dlink, true) : true);
 }
 
 Node* Node::sum(Node* a, Node* b) {
@@ -334,7 +346,7 @@ string Node::toString(string result) {
 
 	string newResult = "";
 	string expo = (exp <= 1 ? "" : "^" + to_string(exp));
-	string coefs = (coef == 1 ? "" : to_string(abs(int(coef))));
+	string coefs = (coef == 1 || coef == -1 ? "" : float2string(coef));
 	string flag = (coef >= 0 ? " + " : " - ");
 
 	switch (type)

@@ -133,8 +133,6 @@
     <ClInclude Include="console.h" />
     <ClInclude Include="cookie.h" />
     <ClInclude Include="file.h" />
-    <ClInclude Include="ll.h" />
-    <ClInclude Include="logo.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="notification.h" />
     <ClInclude Include="configs.h" />
