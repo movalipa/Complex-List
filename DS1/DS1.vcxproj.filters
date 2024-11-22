@@ -54,10 +54,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="in.txt">
+    <Text Include="main.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="in2.txt">
+    <Text Include="helper.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

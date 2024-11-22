@@ -779,8 +779,8 @@ namespace view {
 
 int main()
 {
-	addProfile("main", Node::fromFile("in.txt"));
-	addProfile("helper", Node::fromFile("in2.txt"));
+	addProfile("main", Node::fromFile("main.txt"));
+	addProfile("helper", Node::fromFile("helper.txt"));
 
 	view::home();
 	

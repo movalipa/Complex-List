@@ -144,8 +144,8 @@
     <None Include="cookies.csv" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="in.txt" />
-    <Text Include="in2.txt" />
+    <Text Include="main.txt" />
+    <Text Include="helper.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
