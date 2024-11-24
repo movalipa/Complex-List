@@ -209,7 +209,7 @@ bool Node::isEqual(Node* a, Node* b, bool recursive)
 	// one of them null
 	if ((a == NULL && b != NULL) ||
 		(a != NULL && b == NULL)) return false;
-	
+
 	// neither null
 	return
 		a->type == b->type &&
@@ -265,18 +265,50 @@ Node* Node::sum(Node* a, Node* b) {
 }
 
 Node* Node::exclude(Node* a, Node* b) {
-	if (b==NULL || !a->includes(b))
-		return a->copy(); // even if a is null, null is returned
+	if (!a) return NULL;
+	if (!b) return a->copy(true);
 
-	Node* aCopy = a->copy(true);
-	Node* bInversed = b->copy(true);
-	bInversed->multiply(-1);
+	Node* result = nullptr;
 
-	Node* res = Node::sum(aCopy, bInversed);
-	aCopy->free(true);
-	bInversed->free(true);
+	if (isEqual(a, b) && a->type != 3) {
+		// Merge equal nodes
+		result = a->copy();
+		result->link = exclude(a->link, b->link);
+		result->dlink = exclude(a->dlink, b->dlink);
+	}
+	else {
+		if (a->type == 3 && b->type == 3 && a->exp == b->exp)
+		{
+			// adding coefs togheder
+			result = a->copy();
+			if (result->coef - b->coef == 0)
+			{
+				result->coef -= b->coef;
+			}
+			result->link = exclude(a->link, b->link);
+		}
+		else if (a->type == 2 && b->type == 2) {
+			// Sort by exponent
+			if (a->exp < b->exp) {
+				result = a->copy();
+				result->link = exclude(a->link, b);
+				result->dlink = a->dlink->copy(true);
+			}
+			else {
+				result = b->copy();
+				result->link = exclude(a, b->link);
+				result->dlink = b->dlink->copy(true);
+			}
+		}
+		else {
+			// Fallback for other types
+			result = a->copy();
+			result->link = exclude(a->link, b);
+			result->dlink = a->dlink->copy();
+		}
+	}
 
-	return res->pruneZeros();
+	return result->pruneZeros();
 }
 
 // methods

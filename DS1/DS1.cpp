@@ -290,7 +290,7 @@ namespace intro {
 		header(name, "Profile");
 
 		setConsoleColor(LIGHTGREY);
-		cout << "String Equivilant:";
+		cout << "String Equivilant: ";
 		setConsoleColor(YELLOW);
 		cout << (data->toString() == "" ? " 0" : data->toString().substr(1)) << "\n\n";
 
