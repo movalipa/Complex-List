@@ -22,9 +22,9 @@ var:t,0
 var:u,0
 var:v,0
 var:w,0
-var:x,3
+var:x,5
 var:y,2
 var:z,1
 config:high_contrast_print,0
 config:animation_print,0
-notif:success,Profile imported successfully!
+notif:error,This name doesnt exist as a profile!

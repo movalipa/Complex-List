@@ -2,7 +2,7 @@
 #include "variables.h"
 #include "configs.h"
 
-#define InputFilePath "in.txt"
+#define InputFilePath "main.txt"
 #define HighContrastConfigName "high_contrast_print"
 #define AnimationConfigName "animation_print"
 
@@ -27,6 +27,7 @@ public:
 	static Node* fromMatrix(float matrix[MaxFileLines][MaxFileLines], int m, int n);
 	static bool isEqual(Node* a, Node* b, bool recursive = false);
 	static Node* sum(Node* a, Node* b);
+	static Node* exclude(Node* a, Node* b);
 
 	int print(bool printAll = false, int line = 0, int depth = 0, int skipLine = 0);
 	Node* copy(bool recursive = false);
@@ -36,6 +37,7 @@ public:
 	bool includes(Node* a);
 	void multiply(float num);
 	float calculate(int lastVar = 0);
+	Node* pruneZeros();
 };
 
 // helper functions
@@ -207,7 +209,7 @@ bool Node::isEqual(Node* a, Node* b, bool recursive)
 	// one of them null
 	if ((a == NULL && b != NULL) ||
 		(a != NULL && b == NULL)) return false;
-
+	
 	// neither null
 	return
 		a->type == b->type &&
@@ -259,7 +261,22 @@ Node* Node::sum(Node* a, Node* b) {
 		}
 	}
 
-	return result;
+	return result->pruneZeros();
+}
+
+Node* Node::exclude(Node* a, Node* b) {
+	if (b==NULL || !a->includes(b))
+		return a->copy(); // even if a is null, null is returned
+
+	Node* aCopy = a->copy(true);
+	Node* bInversed = b->copy(true);
+	bInversed->multiply(-1);
+
+	Node* res = Node::sum(aCopy, bInversed);
+	aCopy->free(true);
+	bInversed->free(true);
+
+	return res->pruneZeros();
 }
 
 // methods
@@ -457,5 +474,39 @@ float Node::calculate(int lastVar)
 	}
 }
 
+Node* Node::pruneZeros() {
+	if (this == NULL)
+		return NULL;
+
+	// Process subnodes recursively
+	if (link)
+		link = link->pruneZeros();
+	if (dlink)
+		dlink = dlink->pruneZeros();
+
+	// Handle node pruning based on type
+	switch (type) {
+	case 1:
+		if (link == NULL) { // If no link remains
+			delete this;
+			return NULL;
+		}
+		break;
+	case 2:
+		if (link == NULL && dlink == NULL) { // If no links or dlinks remain
+			delete this;
+			return NULL;
+		}
+		break;
+	case 3:
+		if (coef == 0 && link == NULL) { // If coefficient is zero and no link remains
+			delete this;
+			return NULL;
+		}
+		break;
+	}
+
+	return this;
+}
 
 

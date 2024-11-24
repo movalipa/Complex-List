@@ -36,6 +36,7 @@ struct ConfirmBoxConfig {
 // 8. remove first sign to string prints
 // 9. for negetive coefs includes fix bugs
 // 10. default profile imports
+// 11. export svaing profiles as cookie or file
 
 namespace intro {
 	void keyBinder(string key) {
@@ -88,7 +89,7 @@ namespace intro {
 		{
 			string strEq = available_profiles[i].data->toString();
 			setConsoleColor(BROWN);
-			cout << left << setw(5) << "#" + to_string(i);
+			cout << left << setw(5) << "#" + to_string(i + 1);
 			setConsoleColor(YELLOW);
 			cout << left << setw(22) << available_profiles[i].name.substr(0, 18);
 			cout << left << setw(20) << (strEq == "" ? "0" : strEq.substr(1));
@@ -165,7 +166,7 @@ namespace intro {
 		for (int i = start; i < end; i++)
 		{
 			setConsoleColor(BROWN);
-			cout << left << setw(5) << "#" + to_string(i);
+			cout << left << setw(5) << "#" + to_string(i + 1);
 			setConsoleColor(YELLOW);
 			cout << left << setw(30) << available_configs[i];
 
@@ -259,10 +260,11 @@ namespace intro {
 		//printHelp("NONE", "Export Profile!", DARKGREY);
 		printHelp("DEL", "Remove Profile!", BROWN);
 
-		printHelp("KEY 1", "Comparison!");
-		printHelp("KEY 2", "Subset!");
+		printHelp("KEY 1", "Equality Check!");
+		printHelp("KEY 2", "Subset Check!");
 		printHelp("KEY 3", "Addition!");
-		printHelp("KEY 4", "Exclude!", DARKGREY);
+		printHelp("KEY 4", "Subtraction!");
+		printHelp("KEY 5", "Exclude!");
 
 		printHelp("UP", "Previous Page!", CYAN);
 		printHelp("DOWN", "Next Page!", CYAN);
@@ -290,7 +292,7 @@ namespace intro {
 		setConsoleColor(LIGHTGREY);
 		cout << "String Equivilant:";
 		setConsoleColor(YELLOW);
-		cout << data->toString() << "\n\n";
+		cout << (data->toString() == "" ? " 0" : data->toString().substr(1)) << "\n\n";
 
 		setConsoleColor(LIGHTGREY);
 		cout << "Nodes max depth: ";
@@ -341,7 +343,7 @@ namespace intro {
 
 		renderSettings(page);
 
-		printHelp("KEY 1", "Toggle config!");
+		printHelp("ENTER", "Toggle config!");
 
 		printHelp("UP", "Previous Page!", CYAN);
 		printHelp("DOWN", "Next Page!", CYAN);
@@ -472,7 +474,7 @@ namespace view {
 					setNotif("error", "Provide a valid number!");
 					break;
 				}
-				data->multiply(1.0/stoi(tmp));
+				data->multiply(1.0 / stoi(tmp));
 				setNotif("success", "Profile devided successfully!");
 				break;
 			case VK_KEY4:
@@ -505,7 +507,7 @@ namespace view {
 			intro::profiles(page);
 			int cc = getKey();
 			string name, name2, file;
-			Node* result;
+			Node* result, * tmp;
 			switch (cc)
 			{
 			case VK_ESCAPE:
@@ -621,11 +623,51 @@ namespace view {
 					break;
 				}
 				result = Node::sum(getProfile(name), getProfile(name2));
-				profile("Sum(" + name + "+" + name2 + ")", result);
+				profile("Addition(" + name + "+" + name2 + ")", result);
 				result->free(true);
 				break;
 			case VK_KEY4:
-				setNotif("warning", "To be implemented");
+				cout << "Enter first profile name: ";
+				name = getString();
+				if (!existsProfile(name))
+				{
+					setNotif("error", "Profile doesnt exist!");
+					break;
+				}
+				cout << "Enter second profile name: ";
+				name2 = getString();
+				if (!existsProfile(name2))
+				{
+					setNotif("error", "Profile doesnt exist!");
+					break;
+				}
+				//inversing second profile then add
+				tmp = getProfile(name2)->copy(true);
+				tmp->multiply(-1);
+
+				result = Node::sum(getProfile(name), tmp);
+				profile("Subtraction(" + name + "-" + name2 + ")", result);
+				result->free(true);
+				tmp->free(true);
+				break;
+			case VK_KEY5:
+				cout << "Enter first profile name: ";
+				name = getString();
+				if (!existsProfile(name))
+				{
+					setNotif("error", "Profile doesnt exist!");
+					break;
+				}
+				cout << "Enter second profile name: ";
+				name2 = getString();
+				if (!existsProfile(name2))
+				{
+					setNotif("error", "Profile doesnt exist!");
+					break;
+				}
+				result = Node::exclude(getProfile(name), getProfile(name2));
+				profile("Excluded(" + name + "-" + name2 + ")", result);
+				result->free(true);
 				break;
 			case VK_DELETE:
 				cout << "Enter profile name to remove: ";
@@ -726,7 +768,7 @@ namespace view {
 				cout << "Enter config ID to toggle: ";
 				configID = getString();
 
-				if (is_number(configID) && toggleConfig(available_configs[stoi(configID)]))
+				if (is_number(configID) && toggleConfig(available_configs[stoi(configID) - 1]))
 					setNotif("success", "Config updated successfully!");
 				else
 					setNotif("error", "Couldnt find config ID provided by you!");
@@ -783,15 +825,23 @@ int main()
 	addProfile("helper", Node::fromFile("helper.txt"));
 
 	view::home();
-	
+
 	// palyground
-	
+
 	int i;
 	cin >> i;
 	Node* tree = Node::fromFile();
-	Node* tree2 = Node::fromFile("in2.txt");
+	Node* tree2 = Node::fromFile("helper.txt");
+	Node* res = Node::exclude(tree, tree2);
 
-	cout << Node::isEqual(tree, tree2, true);
+
+	cout << tree->toString() << "\n\n";
+	cout << tree2->toString() << "\n\n";
+	cout << res->toString() << "\n\n";
+
+	//res->print(true);
+
+	//cout << Node::isEqual(tree, tree2, true);
 
 	//Node* tree = Node::fromString("10xyz");
 	//tree->print(true);
@@ -802,5 +852,6 @@ int main()
 	//cout << tree->getDepth();
 	//cout << (tree->includes(tree2) ? "TRUE" : "FALSE");
 	//cout << tree->calculate();
+
 }
 
