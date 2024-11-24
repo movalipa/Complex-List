@@ -69,8 +69,3 @@ bool removeProfile(string name) {
 	return false;
 }
 
-bool setActiveProfile(int index) {
-	return false;
-}
-
-

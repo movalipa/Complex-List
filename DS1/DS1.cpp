@@ -12,6 +12,8 @@
 #include "configs.h"
 #include "profiles.h"
 
+#define ShowCalcColumnConfirm "show_calc_column"
+
 using namespace std;
 
 struct ConfirmBoxConfig {
@@ -76,7 +78,11 @@ namespace intro {
 		setConsoleColor(LIGHTGREY);
 		cout << left << setw(5) << "ID";
 		cout << left << setw(22) << "Name";
-		cout << left << setw(20) << "Expression";
+		cout << left << setw(44) << "Expression";
+
+		if (getConfig(ShowCalcColumnConfirm))
+			cout << left << setw(20) << "Calc";
+
 		setConsoleColor(WHITE);
 		cout << "\n";
 
@@ -92,7 +98,10 @@ namespace intro {
 			cout << left << setw(5) << "#" + to_string(i + 1);
 			setConsoleColor(YELLOW);
 			cout << left << setw(22) << available_profiles[i].name.substr(0, 18);
-			cout << left << setw(20) << (strEq == "" ? "0" : strEq.substr(1));
+			cout << left << setw(44) << (strEq == "" ? "0" : strEq.substr(1));
+
+			if (getConfig(ShowCalcColumnConfirm))
+				cout << left << setw(20) << available_profiles[i].data->calculate();
 
 			setConsoleColor(WHITE);
 			cout << "\n";
@@ -458,7 +467,7 @@ namespace view {
 			case VK_KEY2:
 				cout << "Enter a number to multiply by: ";
 				tmp = getString();
-				if (!is_number(tmp))
+				if (!is_number(tmp) || tmp == "0")
 				{
 					setNotif("error", "Provide a valid number!");
 					break;

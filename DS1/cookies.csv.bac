@@ -27,4 +27,5 @@ var:y,2
 var:z,1
 config:high_contrast_print,0
 config:animation_print,0
+config:show_calc_column,0
 notif:success,Profile multiplied successfully!

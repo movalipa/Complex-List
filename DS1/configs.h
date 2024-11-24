@@ -3,8 +3,8 @@
 
 #define ConfigCookiePrefix "config:"
 
-const string available_configs[] = {"high_contrast_print", "animation_print"};
-const int MAX_CONFIGS = 2;
+const string available_configs[] = {"high_contrast_print", "animation_print", "show_calc_column"};
+const int MAX_CONFIGS = 3;
 
 bool isConfigValid(string name) {
 	for (int i = 0; i < MAX_CONFIGS; ++i) {
